@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Queries>
+  <GetMasterConnection>
+    <![CDATA[ SELECT ProgramServercode FROM `program_servercode_master` WHERE isbell  = 'Y' AND programcode = '##ProgramCode' AND isActive ='Y' ;
+    ]]>
+  </GetMasterConnection>
+  <GetLastTransaction>
+    <![CDATA[ SELECT a.Txnmappedmobile,modifiedbillno AS Billno,SUM(itemnetamount)Amount,modifiedstore AS Store,b.txn AS `Date` 
+              FROM sku_report_loyalty a JOIN (SELECT txnmappedmobile, MAX(modifiedtxndate) txn FROM sku_report_loyalty  
+              WHERE txnmappedmobile = '##MobileNumber')b ON a.txnmappedmobile = b.txnmappedmobile  AND a.modifiedtxndate = b.txn GROUP BY 1;  
+              SELECT a.txnmappedmobile,c.uniqueitemname AS Article, SUM(itemqty) AS Qty, SUM(itemnetamount)Amount  
+              FROM sku_report_loyalty a JOIN (SELECT txnmappedmobile, MAX(modifiedtxndate)txn FROM sku_report_loyalty  
+              WHERE txnmappedmobile = '##MobileNumber')b  ON a.txnmappedmobile = b.txnmappedmobile  AND a.modifiedtxndate = b.txn  
+              JOIN item_master c  ON a.uniqueitemcode = c.uniqueitemcode   GROUP BY c.uniqueitemname;]]>
+  </GetLastTransaction>
+  <GetUserATVDetails>
+    <![CDATA[SELECT Mobile, CASE WHEN firstname<>'' OR lastname<>''THEN CONCAT(FirstName,' ',Lastname) ELSE 'Member' END AS NAME, 
+    Tiername AS Tier,IFNULL(`Total Spends`, 0) AS Lifetime_Value, `Total Visits`AS Visit_count FROM program_single_view WHERE mobile = '##MobileNumber'; ]]>
+  </GetUserATVDetails>
+  <GetItemsByArticlesSKUID>
+    <![CDATA[ SELECT uniqueitemname AS ProductName,uniqueitemcode,price,discount,url,imageurl,
+               `BrandName`,`CategoryName`,`SubCategoryName`,`Colour`, Size FROM item_master 
+            WHERE itemdetails LIKE '%##SearchCriteria%' AND imageurl IS NOT NULL; ]]>
+  </GetItemsByArticlesSKUID>
+  <GetNearbyStoreDetails>
+    <![CDATA[
+              SELECT `SNo`,`StoreCode`,`LpaasStore` AS `StoreName`,`Address` AS `Address1`,'' `Address2`, `Country`, `State`, `City`, `Zone`, `Region`,`Pincode`,
+		          `Latitude`,`Longitude`,`Status` AS `StoreStatus`,`StoreTiming`,DayStatus,StoreManagerMobile,
+		          ( 6371 * ACOS( COS( RADIANS(##p_lattitude) ) * COS( RADIANS( latitude ) ) * COS( RADIANS( longitude ) - RADIANS(##p_logitude) ) + SIN( RADIANS(##p_lattitude) ) * SIN( RADIANS( latitude ) ) ) ) AS distance 
+		          FROM store_master b WHERE STATUS ='Active' AND `DayStatus` = 'Open' HAVING distance < ##p_distance ORDER BY distance LIMIT 0 , 20;
+           ]]>
+  </GetNearbyStoreDetails>
+  <GetNearbyStoreDetailsByPincode>
+    <![CDATA[
+            SELECT `SNo`,`StoreCode`,`LpaasStore` AS `StoreName`,`Address` AS `Address1`,'' `Address2`, `Country`, `State`, `City`, `Zone`, `Region`,`Pincode`,
+                        `Latitude`,`Longitude`,`Status` AS `StoreStatus`,`StoreTiming`,DayStatus,StoreManagerMobile,
+                        ( 6371 * ACOS( COS( RADIANS(latitude) ) * COS( RADIANS( latitude ) ) * COS( RADIANS( longitude ) - RADIANS(longitude) ) + SIN( RADIANS(latitude) ) * SIN( RADIANS( latitude ) ) ) ) AS distance
+            FROM store_master b WHERE Pincode = ##p_pincode   AND STATUS ='Active' AND `DayStatus` = 'Open' ORDER BY distance LIMIT 0 , 20;
+			]]>
+  </GetNearbyStoreDetailsByPincode>
+  <GetStoreDetailsByStoreCode>
+    <![CDATA[
+              SELECT `StoreCode`,`LpaasStore` AS DisplayName,`Address`,`latitude`,`longitude`,`storetiming`,`StoreGSTNo`,`StoreCIN`,`StorePan`,
+	            `City`,`State`,`Region`,`Zone`,`country`,`StoreManagerName`,`StoreManagerMobile`,`pincode`
+              FROM `store_master` WHERE Storecode = '##p_storecode';
+           ]]>
+  </GetStoreDetailsByStoreCode>
+  <GetUserRecommendation>
+    <![CDATA[ select Mobile,Itemcode,`Cateogary`,`Subcategory`,Brand,Colour,Size,Price,Url,Imageurl from  bell_product_recommendation where Mobile = '##MobileNumber'  limit 10;
+    ]]>
+  </GetUserRecommendation>
+  <GetUserKeyInsight>
+    <![CDATA[ SELECT insightid,tagsDict,message, mobile FROM `insights_tags` a LEFT JOIN `insights_message_master` b ON a.insightid=b.insight_id AND a.segment_id=b.segment_id
+            WHERE mobile = '##MobileNumber'
+  ]]>
+  </GetUserKeyInsight>
+  <GetHSNCodeBySKUID>
+    <![CDATA[ select `UniqueItemCode`,`HSNCode`,`UniqueItemName` from `item_master` where `UniqueItemCode` = '##SKUID'
+  ]]>
+  </GetHSNCodeBySKUID>
+  <GetProgConfigDetails>
+    <![CDATA[ select `ProgramCode`,`ProgramName`,`IsWhatsApp`,`IsBell`,`IsWebBot`,`IsShoppingBag`,
+              `IsERPayment`,`IsERShipping`,`IsOrderSync`,`IsSendToShipmentManual`,`IsDigitalReceipt` ,IsTaxCalBeforDiscount AS `IsTaxBeforDiscount`
+              from  program_servercode_master WHERE `IsActive` ='Y' AND ProgramCode ='##ProgCode';
+    ]]>
+  </GetProgConfigDetails>
+  <GetProgList>
+    <![CDATA[ select `ProgramCode`,`ProgramName`,`IsWhatsApp`,`IsBell`,`IsWebBot`,`IsShoppingBag`,
+              `IsERPayment`,`IsERShipping`,`IsOrderSync`,`IsSendToShipmentManual`,`IsDigitalReceipt` ,IsTaxCalBeforDiscount AS `IsTaxBeforDiscount`
+              from  program_servercode_master WHERE `IsActive` ='Y' AND ( IsBell= 'Y' OR IsShoppingBag = 'Y' OR IsDigitalReceipt ='Y');
+    ]]>
+  </GetProgList>
+
+  <GetStoreCodeByCampaignDetail>
+    <![CDATA[ SELECT StoreCode FROM hscampaigncustomermapping WHERE CustomerNumber = SUBSTRING('##p_Mobile', 3) ORDER BY ID DESC LIMIT 1;
+    ]]>
+  </GetStoreCodeByCampaignDetail>
+  <GetStoreCodeByLastTransaction>
+    <![CDATA[ SELECT `Last Shopped Date`, `Last Shopped Store` AS StoreCode FROM program_single_view WHERE Mobile = '##p_Mobile'
+                        ORDER BY `Last Shopped Date` DESC LIMIT 1;
+    ]]>
+  </GetStoreCodeByLastTransaction>
+  <GetStoreCodeByMemberReport>
+    <![CDATA[ SELECT EnrolledStore AS StoreCode FROM member_report WHERE Mobile = '##p_Mobile' LIMIT 1;
+    ]]>
+  </GetStoreCodeByMemberReport>
+  <GetStoreDetailsMaster>
+    <![CDATA[ SELECT StoreCode, OpeningTime, ClosingTime, Address, pincode, latitude, StartDate, EndDate, longitude FROM store_master
+                    WHERE StoreCode = '##p_storecode' AND STATUS = 'Active' AND DayStatus = 'Open' AND IsActive = 'Y' AND IsBell = 'Y' LIMIT 1;;
+    ]]>
+  </GetStoreDetailsMaster>
+  <GetImageLocation>
+    <![CDATA[ SELECT ImageUrl FROM item_image_mapping WHERE programcode = '##ProgCode' AND isactive = 1;
+    ]]>
+  </GetImageLocation>
+</Queries>
+

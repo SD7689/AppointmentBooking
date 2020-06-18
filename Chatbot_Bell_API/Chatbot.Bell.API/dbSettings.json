@@ -1,0 +1,11 @@
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "server=10.105.3.4;user=MukeshBenjwal;database=report_admin;port=3306;password=Mukesh@321;SslMode=none;",
+    "S8": "server=10.105.3.7;user=MukeshBenjwal;database=bataclub;port=3306;password=Mukesh@321;SslMode=none;",
+    "S5": "server=10.105.3.14;user=MukeshBenjwal;database=#Brandname#;port=3306;password=Mukesh@321;SslMode=none;",
+    "S11": "server=10.14.0.11;user=MukeshBenjwal;database=#Brandname#;port=3306;password=Mukesh@321;SslMode=none;",
+    "TestConnection": "server=10.14.0.11;user=MukeshBenjwal;database=test_db;port=3306;password=Mukesh@321;SslMode=none;"
+  },
+    "GetATVDataByMobileNumber": "USP_Bell_GetUserDetails",
+    "GetStoreLocator": "USP_GetStoreLocator"
+}
